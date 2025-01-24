@@ -4,6 +4,7 @@ import {
   reverseBuffer,
   varuint,
 } from './bufferutils';
+import { CHAIN_ID } from './constants';
 import * as bcrypto from './crypto';
 import * as bscript from './script';
 import { OPS as opcodes } from './script';
@@ -342,7 +343,8 @@ export class Transaction {
     buffer.writeInt32LE(hashType, buffer.length - 4);
     txTmp.__toBuffer(buffer, 0, false);
 
-    return bcrypto.hash256(buffer);
+    const hash = bcrypto.hash256(Buffer.concat([CHAIN_ID, buffer]));
+    return hash;
   }
 
   hashForWitnessV1(
@@ -590,7 +592,9 @@ export class Transaction {
     bufferWriter.writeSlice(hashOutputs);
     bufferWriter.writeUInt32(this.locktime);
     bufferWriter.writeUInt32(hashType);
-    return bcrypto.hash256(tbuffer);
+
+    const hash = bcrypto.hash256(Buffer.concat([CHAIN_ID, tbuffer]));
+    return hash;
   }
 
   getHash(forWitness?: boolean): Buffer {

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.Transaction = void 0;
 const bufferutils_1 = require('./bufferutils');
+const constants_1 = require('./constants');
 const bcrypto = require('./crypto');
 const bscript = require('./script');
 const script_1 = require('./script');
@@ -258,7 +259,8 @@ class Transaction {
     const buffer = Buffer.allocUnsafe(txTmp.byteLength(false) + 4);
     buffer.writeInt32LE(hashType, buffer.length - 4);
     txTmp.__toBuffer(buffer, 0, false);
-    return bcrypto.hash256(buffer);
+    const hash = bcrypto.hash256(Buffer.concat([constants_1.CHAIN_ID, buffer]));
+    return hash;
   }
   hashForWitnessV1(inIndex, prevOutScripts, values, hashType, leafHash, annex) {
     // https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki#common-signature-message
@@ -467,7 +469,10 @@ class Transaction {
     bufferWriter.writeSlice(hashOutputs);
     bufferWriter.writeUInt32(this.locktime);
     bufferWriter.writeUInt32(hashType);
-    return bcrypto.hash256(tbuffer);
+    const hash = bcrypto.hash256(
+      Buffer.concat([constants_1.CHAIN_ID, tbuffer]),
+    );
+    return hash;
   }
   getHash(forWitness) {
     // wtxid for coinbase is always 32 bytes of 0x00
